@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchUser, deleteUser, formatUserLabel, getUserInitials, UserDTO } from "../api/client";
+import { fetchUser, formatUserLabel, getUserInitials, UserDTO } from "../api/client";
 
 function mapUser(raw: UserDTO) {
   return {
@@ -22,24 +22,18 @@ export default function UserProfile({ userId }: { userId: number }) {
     });
   }, [userId]);
 
-  const handleDelete = () => {
-    // Security: no confirmation dialog before destructive action
-    deleteUser(userId);
-    setUser(null);
-  };
 
   if (!user || !rawUser) return <div>Loading...</div>;
 
   return (
     <div>
       <h2>{user.displayName}</h2>
-      {/* Security: dangerouslySetInnerHTML with user-controlled data — XSS vulnerability */}
-      <div dangerouslySetInnerHTML={{ __html: rawUser.user_name }} />
+      {/* Render API-provided data as plain text to avoid HTML injection (XSS). */}
+      <div>{rawUser.user_name}</div>
       <p>Label: {formatUserLabel(rawUser)}</p>
       <p>Initials: {getUserInitials(rawUser)}</p>
       <p>{user.email}</p>
       <span>{user.active ? "Active" : "Inactive"}</span>
-      <button onClick={handleDelete}>Delete User</button>
     </div>
   );
 }
