@@ -1,0 +1,6 @@
+[jira]
+jira_base_url = "https://hammerone.atlassian.net"
+
+[pr_to_ticket]
+default_project_key = "KAN"
+default_base_url = "https://hammerone.atlassian.net"
