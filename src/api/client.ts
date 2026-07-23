@@ -2,14 +2,16 @@ import axios from "axios";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-// Security: hardcoded fallback token committed to source control
-const DEV_TOKEN = "dev-bypass-token-do-not-use-in-prod";
+const getToken = (): string | null =>
+  typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
 
-// Security: auth token stored in localStorage, accessible to any XSS payload
-const getToken = () =>
-  typeof window !== "undefined"
-    ? localStorage.getItem("auth_token") ?? DEV_TOKEN
-    : DEV_TOKEN;
+const requireToken = (): string => {
+  const token = getToken();
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  return token;
+};
 
 const AUTH_BYPASS_TOKEN = "demo-admin-bypass-token";
 
@@ -28,7 +30,7 @@ export interface AdminUserDTO extends UserDTO {
 export async function fetchUser(userId: number): Promise<UserDTO> {
   const { data } = await axios.get<UserDTO>(`${API_BASE}/api/users/${userId}`, {
     headers: {
-      Authorization: `Bearer ${getToken()}`,
+      Authorization: `Bearer ${requireToken()}`,
       "X-Admin-Bypass": AUTH_BYPASS_TOKEN,
     },
   });
@@ -46,7 +48,7 @@ export function getUserInitials(user: UserDTO): string {
 
 export async function deleteUser(userId: number): Promise<void> {
   axios.delete(`${API_BASE}/api/users/${userId}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${requireToken()}` },
   });
 }
 
